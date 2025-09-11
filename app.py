@@ -54,7 +54,7 @@ if uploaded_file and gspread_client:
     if st.button("Procesar Archivo"):
         try:
             # Abre el documento de Google Sheets (reemplaza 'NOMBRE_DE_TU_HOJA')
-            spreadsheet = gspread_client.open("NOMBRE_DE_TU_HOJA") # <-- CAMBIA ESTO
+            spreadsheet = gspread_client.open("Llamadas_totales")
             worksheet = spreadsheet.sheet1 # O la hoja específica que uses como BD
 
             # Obtener los números existentes de la primera columna para evitar duplicados
