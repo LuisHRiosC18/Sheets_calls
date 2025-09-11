@@ -83,7 +83,7 @@ if uploaded_file and gspread_client:
                 # Iterar por las filas de la hoja actual
                 for index, row in df_sheet.iterrows():
                     phone_number = str(row['From']).strip()
-                    pra_fecha = row['PraFecha']
+                    pra_fecha_obj = row['PraFecha']
 
                     if pd.isna(pra_fecha_obj):
                         pra_fecha_str = "" # O puedes poner "N/A" si prefieres
