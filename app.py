@@ -85,19 +85,19 @@ if uploaded_file and gspread_client:
                     phone_number = str(row['From']).strip()
                     pra_fecha = row['PraFecha']
 
-                if pd.isna(pra_fecha_obj):
-                    pra_fecha_str = "" # O puedes poner "N/A" si prefieres
-                else:
-                    # Formato 'Año-Mes-Día Hora:Minuto:Segundo'. Puedes simplificarlo a '%Y-%m-%d' si no necesitas la hora.
-                    pra_fecha_str = pra_fecha_obj.strftime('%Y-%m-%d %H:%M:%S')
+                    if pd.isna(pra_fecha_obj):
+                        pra_fecha_str = "" # O puedes poner "N/A" si prefieres
+                    else:
+                        # Formato 'Año-Mes-Día Hora:Minuto:Segundo'. Puedes simplificarlo a '%Y-%m-%d' si no necesitas la hora.
+                        pra_fecha_str = pra_fecha_obj.strftime('%Y-%m-%d %H:%M:%S')
 
                 # Si el número no está en la base de datos, lo agregamos a la lista
-                if phone_number not in existing_phones:
-                    # ¡Importante! Agregamos la versión en string de la fecha
-                    new_rows_to_add.append([phone_number, pra_fecha_str])
+                    if phone_number not in existing_phones:
+                        # ¡Importante! Agregamos la versión en string de la fecha
+                        new_rows_to_add.append([phone_number, pra_fecha_str])
                     
-                    # Y también al set de control para evitar duplicados del mismo archivo
-                    existing_phones.add(phone_number)
+                        # Y también al set de control para evitar duplicados del mismo archivo
+                        existing_phones.add(phone_number)
             
             # Actualizar la barra de progreso
             progress_bar.progress((i + 1) / total_sheets, text=f"Procesando hoja: {sheet_name}")
