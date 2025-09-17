@@ -49,7 +49,7 @@ with tab1:
     uploaded_file_sheets = st.file_uploader("Arrastra o selecciona tu archivo de Excel (.xlsx)", type=['xlsx'], key="sheets_uploader")
 
     if uploaded_file_sheets and gspread_client:
-        if st.button("Procesar y Agregar Números", key="process_sheets"):
+        if st.button("Procesar y agregar números nuevos", key="process_sheets"):
             # (Aquí va el resto de tu código original para procesar el Excel y subir a Google Sheets)
             # ... (Lo he omitido por brevedad, pero debe ir aquí sin cambios)
             st.success("Funcionalidad de la Pestaña 1 ejecutada.")
@@ -58,7 +58,7 @@ with tab1:
 # --- PESTAÑA 2: PROCESAR Y DESCARGAR LOG DE LLAMADAS ---
 with tab2:
     st.header("Procesador de Log de Llamadas (CallLog)")
-    st.write("Sube el archivo `CallLog.csv` para limpiarlo, clasificarlo por funeraria y descargarlo como un archivo Excel organizado.")
+    st.write("Sube el archivo `CallLog.csv` para limpiarlo, clasificarlo por funeraria y descargarlo en formato excel.")
 
     uploaded_file_calllog = st.file_uploader("Sube tu archivo CallLog.csv", type=['csv'], key="calllog_uploader")
 
