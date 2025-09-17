@@ -123,7 +123,7 @@ with tab2:
     st.header("Procesador de Log de Llamadas (CallLog)")
     st.write(
         "Sube el archivo `CallLog.csv` para limpiarlo, clasificarlo por funeraria "
-        "y descargarlo como un archivo Excel organizado."
+        "y descargarlo como un excel."
     )
 
     # Cargador de archivos para la funcionalidad del CallLog
@@ -157,7 +157,7 @@ with tab2:
                 logs_filtered = logs_filtered[logs_filtered['Funeraria'] != '']
                 logs_filtered = logs_filtered.drop_duplicates(subset='From', keep='last')
                 
-                st.success("¡Procesamiento completado!")
+                st.success("Ya lo puede descargar")
                 st.write("Vista previa de los datos filtrados y clasificados:")
                 st.dataframe(logs_filtered[['Funeraria', 'From', 'PraFecha', 'Action Result']])
 
