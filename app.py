@@ -3,6 +3,7 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 import io
+from datetime import time
 
 # --- CONFIGURACIÓN DE LA PÁGINA Y TÍTULO ---
 st.set_page_config(
