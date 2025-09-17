@@ -110,10 +110,10 @@ with tab1:
                 if new_rows_to_add:
                     st.info(f"Agregando {len(new_rows_to_add)} nuevos números a Google Sheets...")
                     worksheet.append_rows(new_rows_to_add, value_input_option='USER_ENTERED')
-                    st.success("¡Proceso completado! Se agregaron los nuevos números exitosamente. ✅")
+                    st.success("Se agregaron los nuevos números a la base de datos")
                     st.balloons()
                 else:
-                    st.info("No se encontraron números nuevos para agregar. La base de datos ya está actualizada. 👍")
+                    st.info("La base no necesitó actualizarse.")
 
             except Exception as e:
                 st.error(f"Ocurrió un error durante el procesamiento: {e}")
