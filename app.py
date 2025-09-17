@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 st.title("📞 Gestor de Números Telefónicos")
-st.write("Una herramienta para procesar logs de llamadas y actualizar la base de datos de contactos.")
+st.write("Esta pagina sirve para procesar logs de Ring Center y actualizar la base de datos de contactos cada día.")
 
 # --- CONFIGURACIÓN INICIAL Y FUNCIONES AUXILIARES ---
 
@@ -48,14 +48,14 @@ def assign_funeraria(extension='Extension', funerarias_list=funerarias):
 
 # --- CREACIÓN DE LA INTERFAZ CON PESTAÑAS ---
 
-tab1, tab2 = st.tabs(["➕ Agregar Nuevos Números", "📊 Procesar Log de Llamadas"])
+tab1, tab2 = st.tabs(["Agregar números", "Procesar Log "])
 
 # --- PESTAÑA 1: AGREGAR NÚMEROS A GOOGLE SHEETS ---
 with tab1:
     st.header("Agregar Números desde Excel a la Base de Datos")
     st.write(
         "Sube un archivo Excel para comparar sus números de teléfono con la base de datos "
-        "de Google Sheets. Los números nuevos se agregarán automáticamente."
+        "de Google Sheets. Los números nuevos se agregarán automáticamente a la hoja."
     )
 
     gspread_client = connect_to_google_sheets()
