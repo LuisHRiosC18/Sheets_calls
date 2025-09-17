@@ -98,12 +98,21 @@ with tab1:
 
                         if pd.isna(pra_fecha_obj):
                             pra_fecha_str = ""
+                        elif isinstance(pra_fecha_obj, time):
+                            pra_fecha_str = pra_fecha_obj.strftime('%H:%M:%S')
                         else:
-                            pra_fecha_str = pd.to_datetime(pra_fecha_obj).strftime('%Y-%m-%d %H:%M:%S')
+                            # Intenta convertir a fecha y hora completa
+                            dt_obj = pd.to_datetime(pra_fecha_obj, errors='coerce')
+                            if pd.notna(dt_obj):
+                                pra_fecha_str = dt_obj.strftime('%Y-%m-%d %H:%M:%S')
+                            else: # Si no se puede convertir, lo deja como texto
+                                pra_fecha_str = str(pra_fecha_obj)
+                        # --- FIN DE LA SECCIÓN CORREGIDA ---
 
                         if phone_number not in existing_phones:
                             new_rows_to_add.append([phone_number, pra_fecha_str])
                             existing_phones.add(phone_number)
+
                     
                     progress_bar.progress((i + 1) / total_sheets, text=f"Procesando hoja: {sheet_name}")
 
