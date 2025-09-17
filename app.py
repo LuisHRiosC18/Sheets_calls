@@ -71,7 +71,7 @@ with tab1:
         if st.button("Procesar y Agregar Números", key="process_sheets"):
             try:
                 # Reemplaza 'NOMBRE_DE_TU_HOJA' con el nombre real de tu documento en Google Drive
-                spreadsheet = gspread_client.open("NOMBRE_DE_TU_HOJA") 
+                spreadsheet = gspread_client.open("Llamadas_totales") 
                 worksheet = spreadsheet.sheet1
 
                 st.info("Obteniendo números existentes de la base de datos...")
