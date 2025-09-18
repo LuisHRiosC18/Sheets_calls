@@ -49,7 +49,7 @@ def assign_funeraria(extension='Extension', funerarias_list=funerarias):
 
 # --- CREACIÓN DE LA INTERFAZ CON PESTAÑAS ---
 
-tab1, tab2 = st.tabs(["Agregar números", "Procesar Log "])
+tab1, tab2, tab3 = st.tabs(["Agregar números", "Procesar Log", "Evaluacion"])
 
 # --- PESTAÑA 1: AGREGAR NÚMEROS A GOOGLE SHEETS ---
 with tab1:
@@ -190,3 +190,65 @@ with tab2:
 
         except Exception as e:
             st.error(f"Ocurrió un error al procesar el archivo: {e}")
+
+with tab3:
+    st.header("Agregar contactos a la evaluacion")
+    st.write(
+        "Sube el archivo de evaluación para anexarlo a la base de datos."
+    )
+
+    # Cargador de archivos para la skibidi-valuacion
+    uploaded_file_evalua = st.file_uploader(
+        "Sube el archivo de evaluacion en formato .xslx", 
+        type=['xslx'], 
+        key="evalua_uploader"
+    )
+
+    if uploaded_file_evalua:
+        try:
+            logs = pd.read_csv(uploaded_file_evalua)
+            
+            st.info("Agregando")
+            logs_filtered = logs.copy()
+            logs_filtered['From'] = logs_filtered['From'].astype(str)
+            logs_filtered = logs_filtered[logs_filtered['From'].str.len() > 3]
+            
+            required_cols = ['From', 'Date', 'Time', 'Action Result', 'Extension']
+            if not all(col in logs_filtered.columns for col in required_cols):
+                st.error(f"El archivo CSV debe contener las siguientes columnas: {', '.join(required_cols)}")
+            else:
+                logs_filtered = logs_filtered[required_cols]
+                logs_filtered['Date'] = logs_filtered['Date'].str.replace(r'[a-zA-Z]', '', regex=True).str.strip()
+                logs_filtered['PraFecha'] = pd.to_datetime(
+                    logs_filtered['Date'] + ' ' + logs_filtered['Time'], 
+                    errors='coerce'
+                ).dt.strftime('%Y-%m-%d %H:%M:%S')
+
+                logs_filtered['Funeraria'] = logs_filtered['Extension'].apply(assign_funeraria)
+                logs_filtered = logs_filtered[logs_filtered['Funeraria'] != '']
+                logs_filtered = logs_filtered.drop_duplicates(subset='From', keep='last')
+                
+                st.success("Ya lo puede descargar")
+                st.write("Vista previa de los datos filtrados y clasificados:")
+                st.dataframe(logs_filtered[['Funeraria', 'From', 'PraFecha', 'Action Result']])
+
+                # --- Lógica para crear el archivo Excel en memoria ---
+                output = io.BytesIO()
+                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                    for funeraria_name in sorted(logs_filtered['Funeraria'].unique()):
+                        df_funeraria = logs_filtered[logs_filtered['Funeraria'] == funeraria_name]
+                        df_to_write = df_funeraria[['From', 'PraFecha', 'Action Result']]
+                        df_to_write.to_excel(writer, sheet_name=funeraria_name, index=False)
+                
+                excel_data = output.getvalue()
+
+                st.download_button(
+                    label="📥 Descargar Excel Procesado",
+                    data=excel_data,
+                    file_name="CallLog_Procesado.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+
+        except Exception as e:
+            st.error(f"Ocurrió un error al procesar el archivo: {e}")
+
