@@ -197,6 +197,8 @@ with tab3:
         "Sube el archivo de evaluación para anexarlo a la base de datos."
     )
 
+    gspread_client_tab3 = connect_to_google_sheets()
+
     # Cargador de archivos para la skibidi-valuacion
     uploaded_file_evalua = st.file_uploader(
         "Sube el archivo de evaluacion en formato .xslx", 
@@ -204,51 +206,58 @@ with tab3:
         key="evalua_uploader"
     )
 
-    if uploaded_file_evalua:
-        try:
-            logs = pd.read_csv(uploaded_file_evalua)
+    if uploaded_file_evalua and gspread_client_tab3:
+        if st.button("Buscar Columnas y Actualizar", key="process_evalua"):
+            df_evaluacion = None
+            header_found = False
             
-            st.info("Agregando")
-            logs_filtered = logs.copy()
-            logs_filtered['From'] = logs_filtered['From'].astype(str)
-            logs_filtered = logs_filtered[logs_filtered['From'].str.len() > 3]
+            # 1. Ciclo para encontrar la fila de encabezado
+            st.info("Buscando la fila de encabezado que contenga 'From'...")
+            for i in range(10): # Intentará desde la fila 0 hasta la 9
+                try:
+                    # Intenta leer el archivo usando la fila 'i' como encabezado
+                    df_temp = pd.read_excel(uploaded_file_evalua, header=i)
+                    
+                    # Comprueba si 'From' (insensible a mayúsculas/minúsculas) está en las columnas
+                    if 'from' in [str(col).lower().strip() for col in df_temp.columns]:
+                        st.success(f"¡Encabezado encontrado en la fila {i + 1}!")
+                        df_evaluacion = df_temp
+                        header_found = True
+                        break # Sale del ciclo si lo encuentra
+                except Exception:
+                    # Si hay un error al leer (ej. fila vacía), simplemente continúa
+                    continue
             
-            required_cols = ['From', 'Date', 'Time', 'Action Result', 'Extension']
-            if not all(col in logs_filtered.columns for col in required_cols):
-                st.error(f"El archivo CSV debe contener las siguientes columnas: {', '.join(required_cols)}")
+            # 2. Procesar y subir los datos si el encabezado fue encontrado
+            if header_found and df_evaluacion is not None:
+                try:
+                    st.write("Vista previa de los datos a agregar:")
+                    st.dataframe(df_evaluacion.head())
+                    
+                    # Conectarse al documento y hoja específicos
+                    spreadsheet_eval = gspread_client_tab3.open("Llamadas_totales")
+                    worksheet_eval = spreadsheet_eval.worksheet("evaluacion")
+                    
+                    # Limpiar datos: convertir todo a string para evitar errores y reemplazar NaNs
+                    df_evaluacion = df_evaluacion.fillna('').astype(str)
+                    
+                    # Convertir el DataFrame a una lista de listas para subirlo
+                    rows_to_add = df_evaluacion.values.tolist()
+                    
+                    st.info(f"Agregando {len(rows_to_add)} filas nuevas a la hoja 'evaluacion'...")
+                    worksheet_eval.append_rows(rows_to_add, value_input_option='USER_ENTERED')
+                    
+                    st.success("Evaluación fue actualizada!")
+                    st.balloons()
+
+                except gspread.exceptions.WorksheetNotFound:
+                    st.error("Error: No se encontró una hoja llamada 'evaluacion' en el documento 'Llamadas_totales'.")
+                except gspread.exceptions.SpreadsheetNotFound:
+                    st.error("Error: No se encontró el documento de Google Sheets llamado 'Llamadas_totales'. Revisa el nombre y los permisos.")
+                except Exception as e:
+                    st.error(f"Ocurrió un error al subir los datos: {e}")
             else:
-                logs_filtered = logs_filtered[required_cols]
-                logs_filtered['Date'] = logs_filtered['Date'].str.replace(r'[a-zA-Z]', '', regex=True).str.strip()
-                logs_filtered['PraFecha'] = pd.to_datetime(
-                    logs_filtered['Date'] + ' ' + logs_filtered['Time'], 
-                    errors='coerce'
-                ).dt.strftime('%Y-%m-%d %H:%M:%S')
-
-                logs_filtered['Funeraria'] = logs_filtered['Extension'].apply(assign_funeraria)
-                logs_filtered = logs_filtered[logs_filtered['Funeraria'] != '']
-                logs_filtered = logs_filtered.drop_duplicates(subset='From', keep='last')
-                
-                st.success("Ya lo puede descargar")
-                st.write("Vista previa de los datos filtrados y clasificados:")
-                st.dataframe(logs_filtered[['Funeraria', 'From', 'PraFecha', 'Action Result']])
-
-                # --- Lógica para crear el archivo Excel en memoria ---
-                output = io.BytesIO()
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                    for funeraria_name in sorted(logs_filtered['Funeraria'].unique()):
-                        df_funeraria = logs_filtered[logs_filtered['Funeraria'] == funeraria_name]
-                        df_to_write = df_funeraria[['From', 'PraFecha', 'Action Result']]
-                        df_to_write.to_excel(writer, sheet_name=funeraria_name, index=False)
-                
-                excel_data = output.getvalue()
-
-                st.download_button(
-                    label="📥 Descargar Excel Procesado",
-                    data=excel_data,
-                    file_name="CallLog_Procesado.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-
-        except Exception as e:
-            st.error(f"Ocurrió un error al procesar el archivo: {e}")
+                # 3. Mostrar error si el encabezado no se encontró
+                st.error("Error: No se encontraron las columnas con la información de la llamada. "
+                         "Asegúrate de que el archivo Excel tiene una columna llamada 'From' en las primeras 10 filas.")
 
